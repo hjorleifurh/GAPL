@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project basedir="." default="build" name="cadiaplayer">
+    <property name="junit.output.dir" value="junit"/>
+    <property name="debuglevel" value="source,lines,vars"/>
+    <property name="target" value="1.8"/>
+    <property name="source" value="1.8"/>
+    <path id="cadiaplayer.classpath">
+		<pathelement location="bin"/>
+		<fileset dir="lib" includes="**/*.jar"/>
+    </path>
+   
+    <target name="init">
+        <mkdir dir="bin"/>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+        <copy includeemptydirs="false" todir="bin">
+            <fileset dir="src/main/resources">
+                <exclude name="**/*.launch"/>
+                <exclude name="**/*.java"/>
+            </fileset>
+        </copy>
+    </target>
+    <target name="clean">
+        <delete dir="bin"/>
+    </target>
+    <target depends="clean" name="cleanall"/>
+    <target depends="build-subprojects,build-project,commit-id" name="build"/>
+    <target name="build-subprojects"/>
+    <target depends="init" name="build-project">
+        <echo message="${ant.project.name}: ${ant.file}"/>
+        <javac includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src"/>
+			<classpath refid="cadiaplayer.classpath"/>
+        </javac>
+        <javac includeantruntime="false" debug="true" debuglevel="${debuglevel}" destdir="bin" source="${source}" target="${target}">
+            <src path="src/main/resources"/>
+			<classpath refid="cadiaplayer.classpath"/>
+        </javac>
+    </target>
+    
+    <target name="commit-id" depends="">
+	<exec executable = "git" output="bin/commit-id">
+	    <arg value = "describe" />
+	    <arg value = "--long" />
+	    <arg value = "--tags" />
+	    <arg value = "--always" />
+	    <arg value = "--dirty" />
+	</exec>
+    </target>
+
+	<target name="Kiosk.jar" depends="build">
+		<jar destfile="Kiosk.jar" basedir="bin" includes="**/*.class,commit-id">
+			<manifest>
+				<attribute name="Main-Class" value="org.ggp.base.apps.kiosk.Kiosk"/>
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<zipgroupfileset dir="lib" includes="**/*.jar"/>
+		</jar>
+	</target>
+
+	<target name="Player.jar" depends="build">
+		<jar destfile="Player.jar" basedir="bin" includes="**/*.class,commit-id">
+			<manifest>
+				<attribute name="Main-Class" value="org.ggp.base.apps.player.Player"/>
+				<attribute name="Class-Path" value="."/>
+			</manifest>
+			<zipgroupfileset dir="lib" includes="**/*.jar"/>
+		</jar>
+	</target>
+
+    <target name="ClojureConsole">
+        <java classname="org.ggp.base.apps.consoles.ClojureConsole" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="ClojureGamer">
+        <java classname="org.ggp.base.player.gamer.clojure.ClojureGamer" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="GameStateRenderPanel">
+        <java classname="org.ggp.base.util.xhtml.GameStateRenderPanel" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="PlayerRunner">
+        <java classname="org.ggp.base.apps.player.PlayerRunner" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx1500m -server -XX:-DontCompileHugeMethods -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=10"/>
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="Kiosk">
+        <java classname="org.ggp.base.apps.kiosk.Kiosk" failonerror="true" fork="yes">
+            <jvmarg line="-Xmx1500m -server -XX:-DontCompileHugeMethods -XX:MinHeapFreeRatio=10 -XX:MaxHeapFreeRatio=10"/>
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="PythonConsole">
+        <java classname="org.ggp.base.apps.consoles.PythonConsole" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="Server">
+	<java classname="org.ggp.base.apps.server.Server" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="SimpleGameSim">
+        <java classname="org.ggp.base.apps.utilities.SimpleGameSim" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="TiltyardRequestFarm">
+        <java classname="org.ggp.base.apps.tiltyard.TiltyardRequestFarm" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>	
+    <target name="Test_Http">
+        <mkdir dir="${junit.output.dir}"/>
+        <junit fork="yes" printsummary="withOutAndErr">
+            <formatter type="xml"/>
+            <test name="util.http.Test_Http" todir="${junit.output.dir}"/>
+            <classpath refid="cadiaplayer.classpath"/>
+        </junit>
+    </target>
+    <target name="Player">
+	    <java classname="org.ggp.base.apps.player.Player" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="PropNetAnnotater">
+        <java classname="org.ggp.base.util.propnet.factory.annotater.PropNetAnnotater" failonerror="true" fork="yes">
+            <classpath refid="cadiaplayer.classpath"/>
+        </java>
+    </target>
+    <target name="junitreport">
+        <junitreport todir="${junit.output.dir}">
+            <fileset dir="${junit.output.dir}">
+                <include name="TEST-*.xml"/>
+            </fileset>
+            <report format="frames" todir="${junit.output.dir}"/>
+        </junitreport>
+    </target>
+</project>
